@@ -16,7 +16,7 @@ Before you begin, make sure you have the following prerequisites in place:
 1. **AWS Account:** You need an active AWS account. If you don'tr have one, you can sign up [here](https://aws.amazon.com/).
 2. **Terraform:** Install Terraform by following the instructions in the [Terraform documentation](https://learn.hashicorp.com/tutorials/terraform/install-cli).
 3. **Email Address:** Provide an email address for receiving subscription notifications from the API.
-4. **Clone Repo:** Make sure the repo cloned to your PC and open it via some IDE (e.g: VS Code)
+
 
 ## Step 1: Setting Up AWS Account in VS Code Terminal
 

@@ -7,7 +7,7 @@ variable "region" {
 variable "accountId" {
     description = "AWS account ID"
     type        = string
-    default     = "133318666765"
+    default     = "133318666765" # Change to your AWS account ID.
 }
 
 variable "lambda_function_name" {
@@ -25,5 +25,5 @@ variable "endpoint_path" {
 variable "mail_endpoint" {
     description = "The mail endpoint"
     type        = string
-    default     = "Tal.Aharon97@gmail.com"
+    default     = "tal.aharon97@gmail.com" # According to the assignment.
 }
