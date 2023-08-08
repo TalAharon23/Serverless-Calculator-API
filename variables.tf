@@ -25,5 +25,5 @@ variable "endpoint_path" {
 variable "mail_endpoint" {
     description = "The mail endpoint"
     type        = string
-    default     = "tal.aharon97@gmail.com" # According to the assignment.
+    default     = "eranz@cloudbuzz.co.il" # According to the assignment.
 }
