@@ -29,8 +29,6 @@ def handle_request(event):
     try:
         num1 = int(event['queryStringParameters']['num1'])
         num2 = int(event['queryStringParameters']['num2'])
-        # num1 = int(event["num1"])
-        # num2 = int(event["num2"])
         
         result = calculate_sum(num1, num2)
         result_message = f"Result: {num1} + {num2} = {result}"
