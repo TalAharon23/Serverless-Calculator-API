@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1"
+  region = var.region
 }
 
 resource "aws_iam_role" "lambda_exec" {
@@ -20,7 +20,7 @@ resource "aws_iam_role" "lambda_exec" {
 }
 
 resource "aws_lambda_function" "calculator_lambda" {
-  function_name = "SubscribedLambda"
+  function_name = var.lambda_function_name
   role          = aws_iam_role.lambda_exec.arn
   handler       = "calculator_lambda.lambda_handler"
   runtime       = "python3.8"
@@ -62,71 +62,55 @@ resource "aws_sns_topic_subscription" "email_subscription" {
   endpoint  = "Tal.Aharon97@gmail.com"
 }
 
-# Create the API Gateway
-resource "aws_api_gateway_rest_api" "calculator_api" {
+########## API GATEWAY ##########
+
+resource "aws_api_gateway_rest_api" "calculator_apigw" {
   name = "ServerlessCalculatorAPI"
 }
 
-# Create a resource within the API Gateway
-resource "aws_api_gateway_resource" "calculator_resource" {
-  rest_api_id = aws_api_gateway_rest_api.calculator_api.id
-  parent_id   = aws_api_gateway_rest_api.calculator_api.root_resource_id
-  path_part   = "{proxy+}"
+resource "aws_api_gateway_resource" "apigw_resource" {
+  rest_api_id = aws_api_gateway_rest_api.calculator_apigw.id
+  parent_id   = aws_api_gateway_rest_api.calculator_apigw.root_resource_id
+  path_part   = var.endpoint_path
 }
 
-# Define a method for the resource
-resource "aws_api_gateway_method" "calculator_method" {
-  rest_api_id   = aws_api_gateway_rest_api.calculator_api.id
-  resource_id   = aws_api_gateway_resource.calculator_resource.id
-  http_method   = "ANY"
+resource "aws_api_gateway_method" "apigw_method" {
+  rest_api_id   = aws_api_gateway_rest_api.calculator_apigw.id
+  resource_id   = aws_api_gateway_resource.apigw_resource.id
+  http_method   = "GET"
   authorization = "NONE"
 }
 
-# Integrate the API Gateway method with the Lambda function
-resource "aws_api_gateway_integration" "calculator_integration" {
-  rest_api_id = aws_api_gateway_rest_api.calculator_api.id
-  resource_id = aws_api_gateway_resource.calculator_resource.id
-  http_method = aws_api_gateway_method.calculator_method.http_method
-
+resource "aws_api_gateway_integration" "integration" {
+  rest_api_id             = aws_api_gateway_rest_api.calculator_apigw.id
+  resource_id             = aws_api_gateway_resource.apigw_resource.id
+  http_method             = aws_api_gateway_method.apigw_method.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.calculator_lambda.invoke_arn
 }
 
-resource "aws_api_gateway_domain_name" "custom_domain" {
-  domain_name              = "calculator-api.example.com"
-  certificate_arn          = "arn:aws:acm:us-east-1:123456789012:certificate/abcd1234-ab12-cd34-ef56-1234567890ab"
-  security_policy          = "TLS_1_2"
+resource "aws_lambda_permission" "apigw_lambda" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.calculator_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "arn:aws:execute-api:${var.region}:${var.accountId}:${aws_api_gateway_rest_api.calculator_apigw.id}/*/${aws_api_gateway_method.apigw_method.http_method}${aws_api_gateway_resource.apigw_resource.path}"
 }
 
-resource "aws_api_gateway_base_path_mapping" "base_path_mapping" {
-  domain_name = aws_api_gateway_domain_name.custom_domain.id
-  rest_api_id = aws_api_gateway_rest_api.calculator_api.id
-  stage_name  = "prod"
-}
-
-
-# Define a response for the method
-resource "aws_api_gateway_method_response" "example_response" {
-  rest_api_id = aws_api_gateway_rest_api.calculator_api.id
-  resource_id = aws_api_gateway_resource.calculator_resource.id
-  http_method = aws_api_gateway_method.calculator_method.http_method
-
-  status_code = "200"
-
-  response_models = {
-    "application/json" = "Empty"
+resource "aws_api_gateway_deployment" "apigw_deployment" {
+  rest_api_id = aws_api_gateway_rest_api.calculator_apigw.id
+  triggers = {
+    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.calculator_apigw.body))
   }
+  lifecycle {
+    create_before_destroy = true
+  }
+  depends_on = [aws_api_gateway_method.apigw_method, aws_api_gateway_integration.integration]
 }
 
-# Define an integration response for the method
-resource "aws_api_gateway_integration_response" "example_response" {
-  rest_api_id = aws_api_gateway_rest_api.calculator_api.id
-  resource_id = aws_api_gateway_resource.calculator_resource.id
-  http_method = aws_api_gateway_method.calculator_method.http_method
-  status_code = aws_api_gateway_method_response.example_response.status_code
-
-  response_templates = {
-    "application/json" = ""
-  }
+resource "aws_api_gateway_stage" "apigw_stage" {
+  deployment_id = aws_api_gateway_deployment.apigw_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.calculator_apigw.id
+  stage_name    = "dev"
 }
