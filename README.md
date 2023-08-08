@@ -3,36 +3,35 @@
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
-- [Step 1: Configure AWS Resources](#step-1-configure-aws-resources)
+- [Step 1: Setting Up AWS Account in VS Code Terminal](#step-1-setting-up-aws-account-in-vs-code-terminal)
 - [Step 2: Deploy Terraform Script](#step-2-deploy-terraform-script)
 - [Step 3: Interact with the API](#step-3-interact-with-the-api)
-- [Conclusion](#conclusion)
+- [Cleanup](#cleanup)
+- [Summary](#summary)
 
 ## Prerequisites
 
 Before you begin, make sure you have the following prerequisites in place:
 
-1. **AWS Account:** You need an active AWS account. If you don't have one, you can sign up [here](https://aws.amazon.com/).
+1. **AWS Account:** You need an active AWS account. If you don'tr have one, you can sign up [here](https://aws.amazon.com/).
 2. **Terraform:** Install Terraform by following the instructions in the [Terraform documentation](https://learn.hashicorp.com/tutorials/terraform/install-cli).
 3. **Email Address:** Provide an email address for receiving subscription notifications from the API.
+4. **Clone Repo:** Make sure the repo cloned to your PC and open it via some IDE (e.g: VS Code)
 
-## Step 1: Configure AWS Resources
+## Step 1: Setting Up AWS Account in VS Code Terminal
 
-1. **IAM Role:** Log in to your AWS Management Console. Create an IAM role named `lambda_execution_role` with `lambda.amazonaws.com` as the trusted entity. Attach the `AWSLambdaBasicExecutionRole` policy to this role.
+Follow these steps to configure your AWS credentials in the Visual Studio Code (VS Code) terminal using the AWS Command Line Interface (CLI).
 
-2. **SNS Topic:** Create an SNS topic named `SubscriptionSNS` in your AWS account. Provide your email address for email subscription.
+### Install and configure AWS CLI
 
-3. **Lambda Function:** Create an AWS Lambda function named `SubscribedLambda` using the provided `calculator_lambda.zip` deployment package. Attach the `lambda_execution_role` IAM role to this function.
+1. If you haven't already, install the AWS CLI on your computer. You can download and install it from the official AWS CLI documentation: [Installing the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
 
-4. **Lambda Permission:** Configure the Lambda function to allow SNS to invoke it. Attach a policy to the `lambda_execution_role` to grant permissions for `sns:Publish` to the `SubscriptionSNS` topic.
+2. Run the following command to configure your AWS credentials. Replace `<YOUR_ACCESS_KEY>` and `<YOUR_SECRET_KEY>` with your actual AWS access key and secret key. Also, specify the desired default region.
 
-5. **API Gateway:** Create an API Gateway named `ServerlessCalculatorAPI` in the AWS Management Console.
+   ```sh
+   aws configure
+   ```
 
-6. **API Gateway Resource and Method:** Create a resource and method (e.g., `GET`) within the API Gateway. Configure the integration to the `SubscribedLambda` Lambda function using the `AWS_PROXY` integration type.
-
-7. **API Gateway Deployment:** Deploy the API to a stage (e.g., `prod`) within the API Gateway.
-
-8. **Custom Domain:** If desired, configure a custom domain for the API Gateway using an ACM certificate.
 
 ## Step 2: Deploy Terraform Script
 
@@ -40,20 +39,50 @@ Before you begin, make sure you have the following prerequisites in place:
 
 2. **Navigate to Directory:** Open a terminal and navigate to the directory containing the Terraform files.
 
-3. **Edit Variables:** Open the `variables.tf` file and modify the variables as needed. Ensure that the `region`, `lambda_function_name`, `endpoint_path`, and other variables match your AWS configuration.
-
+3. **Edit Variables:** Open the `variables.tf` file and modify the variables as needed. Ensure that the `region`, `lambda_function_name`, `endpoint_path`, `mail_endpoint`, and other variables match your AWS configuration.
+ ' 
 4. **Initialize Terraform:** Run `terraform init` to initialize Terraform.
 
 5. **Plan and Apply:** Run `terraform plan` to preview the changes, and then run `terraform apply` to apply the changes. Confirm the changes when prompted.
 
 ## Step 3: Interact with the API
+First of all get the URL provided:
 
-1. **Access the HTML Interface:** Open the `index.html` file in a web browser. You will see an interface to input numbers and generate the API URL.
+Step 1: Log into the AWS Console.
 
-2. **Generate API URL:** Enter two numbers and click the "Click for result!" button. The API URL and calculated result will be displayed.
+Step 2 :  Go to the API Gateway console.
 
-3. **Invoke API:** Open the generated API URL in a browser or use tools like `curl` or `Postman` to send GET requests with the `num1` and `num2` parameters. You will receive a JSON response with the calculated result.
+Step 3: Click on the API name.
 
-## Conclusion
+Step 4: Find the Deploy section in the left panel.
 
-You have successfully set up and used the Serverless Calculator API environment. This guide walked you through configuring AWS resources, deploying the Terraform script, and interacting with the API through the HTML interface and direct requests. You can now extend and customize this environment for your specific use cases and explore more AWS features and services.
+Step 5: Click on stage. Select the stage `dev`. The stage details on the right side will include the “Invoke URL”
+
+1. **Access via browser**: Open your browser  with the URL and the relevant parameters.
+e.g: 
+```sh
+https://zsq1s6pns6.execute-api.us-east-1.amazonaws.com/dev/calculator?num1=3&num2=8
+```
+The result will be:
+
+
+{"result": 11}
+
+
+Also, you will get a notice in your mail (:
+
+2. **Invoke API:** Open the generated API URL in a browser or use tools like `curl` or `Postman` to send GET requests with the `num1` and `num2` parameters. You will receive a JSON response with the calculated result.
+
+**Coming soon: Access the HTML Interface:** Open the `index.html` file in a web browser. You will see an interface to input numbers and generate the API URL
+
+## Cleanup
+To clean up and remove deployed resources, run:
+```sh
+terraform destroy
+```
+
+## Summary
+
+You have successfully set up and used the Serverless Calculator API environment. This guide walked you through configuring AWS resources, deploying the Terraform script, and interacting with the API through the HTML interface and direct requests. 
+
+
