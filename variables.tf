@@ -21,3 +21,9 @@ variable "endpoint_path" {
     type        = string
     default     = "calculator"
 }
+
+variable "mail_endpoint" {
+    description = "The mail endpoint"
+    type        = string
+    default     = "Tal.Aharon97@gmail.com"
+}

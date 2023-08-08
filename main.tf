@@ -59,7 +59,7 @@ resource "aws_iam_role_policy" "lambda_sns_publish_policy" {
 resource "aws_sns_topic_subscription" "email_subscription" {
   topic_arn = aws_sns_topic.subscription_sns.arn
   protocol  = "email"
-  endpoint  = "Tal.Aharon97@gmail.com"
+  endpoint  = var.mail_endpoint
 }
 
 ########## API GATEWAY ##########
