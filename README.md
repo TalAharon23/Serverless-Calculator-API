@@ -40,7 +40,7 @@ Follow these steps to configure your AWS credentials in the Visual Studio Code (
 2. **Navigate to Directory:** Open a terminal and navigate to the directory containing the Terraform files.
 
 3. **Edit Variables:** Open the `variables.tf` file and modify the variables as needed. Ensure that the `region`, `lambda_function_name`, `endpoint_path`, `mail_endpoint`, and other variables match your AWS configuration.
- ' 
+   
 4. **Initialize Terraform:** Run `terraform init` to initialize Terraform.
 
 5. **Plan and Apply:** Run `terraform plan` to preview the changes, and then run `terraform apply` to apply the changes. Confirm the changes when prompted.
